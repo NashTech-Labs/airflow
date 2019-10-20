@@ -69,14 +69,23 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
+RUN  rm -rf ${AIRFLOW_USER_HOME}/dags
+ADD  dags/ ${AIRFLOW_USER_HOME}/dags
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
+# ssh
+ENV SSH_PASSWD "root:Docker!"
+RUN apt-get update \
+        && apt-get install -y --no-install-recommends dialog \
+        && apt-get update \
+	&& apt-get install -y --no-install-recommends openssh-server \
+	&& echo "$SSH_PASSWD" | chpasswd 
 
-EXPOSE 8080 5555 8793 22
+COPY sshd_config /etc/ssh/
 
-USER airflow
+EXPOSE 8080 5555 8793 2222 22
 WORKDIR ${AIRFLOW_USER_HOME}
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["webserver"] # set default arg for entrypoint

@@ -68,7 +68,12 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   AIRFLOW__CELERY__BROKER_URL="redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1"
   wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
 fi
+# Custom Additions 
 pip install "apache-airflow[databricks]"
+echo "Starting SSH ..."
+service ssh start
+
+###################
 case "$1" in
   webserver)
     airflow initdb
